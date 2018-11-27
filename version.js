@@ -105,40 +105,44 @@ async function createBid(username, auction_id, bid_amount, created_at) {
     }
   ];
 
-  //NEED TO FIX THE BID CLOSE DATE CONDITIONAL
-  // let bidCloseDate = (await knex("auctions").where({
-  //   auction_id: auction_id
-  // }))[0].closed_at;
-  //
-  // console.log(bidCloseDate);
-  // let date = new Date("2018-11-26");
-  // if (bidCloseDate > date) {
+  //Conditional here to check if bid date has passed.
+  let bidCloseDate = (await knex("auctions").where({
+    auction_id: auction_id
+  }))[0].closed_at;
 
-  //conditional here, check if this bid is the highest bid, if it is, run the knex update auction function.
-  let highBid = knex("auctions").where({ auction_id: auction_id })
-    .current_highest_bid;
-  if (highBid < bid_amount || highBid === undefined) {
-    updateAuction(auction_id, bid_amount);
+  //ENTER IN DATE HERE TO CHECK CONDITIONAL
+  let date = new Date("2018-12-26");
+  bidCloseDate = new Date(bidCloseDate);
+
+  if (bidCloseDate > date) {
+    // conditional here, check if this bid is the highest bid, if it is, run the knex update auction function.
+    let highBid = knex("auctions").where({ auction_id: auction_id })
+      .current_highest_bid;
+
+    if (highBid < bid_amount || highBid === undefined) {
+      updateAuction(auction_id, bid_amount);
+    }
+
+    knex("bids")
+      .insert(bid)
+      .then(() => console.log("bid data inserted"))
+      .catch(err => {
+        console.log(err);
+        throw err;
+      })
+      .finally(() => {
+        knex.destroy();
+      });
+  } else {
+    return console.log(
+      `Bid Close Date: ${bidCloseDate} Today: ${date}. Bid closed.`
+    );
   }
-
-  knex("bids")
-    .insert(bid)
-    .then(() => console.log("bid data inserted"))
-    .catch(err => {
-      console.log(err);
-      throw err;
-    })
-    .finally(() => {
-      knex.destroy();
-    });
 }
 
 function updateAuction(auction_id, bid_amount) {
   let highBid = knex("auctions").where({ auction_id: auction_id })
     .current_highest_bid;
-  if (highBid < bid_amount || highBid === undefined) {
-    updateAuction(auction_id, bid_amount);
-  }
 
   knex("auctions")
     .where({ auction_id: auction_id })
