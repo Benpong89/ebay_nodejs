@@ -1,0 +1,23 @@
+CREATE TABLE users (
+user_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+username VARCHAR NOT NULL,
+password VARCHAR NOT NULL,
+email VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS auctions (
+auction_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+created_at date NOT NULL,
+closed_at date NOT NULL,
+item_description VARCHAR,
+current_highest_bid int,
+winner VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS bids (
+bid_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+username VARCHAR NOT NULL,
+auction_id uuid NOT NULL,
+bid_amount int NOT NULL,
+created_at timestamp NOT NULL
+);
